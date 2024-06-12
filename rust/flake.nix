@@ -53,16 +53,11 @@
           };
 
           config.Cmd = ["/bin/${cargoToml.name}"];
-          config.Env = [
-            "DUMMY=${builtins.getEnv "DUMMY"}"
-          ];
         };
       };
 
       devShells.default = pkgs.mkShell {
-        # Get dependencies from the main package
         inputsFrom = [];
-        # Additional tooling
         buildInputs = with pkgs; [
           rustBins
           evcxr
