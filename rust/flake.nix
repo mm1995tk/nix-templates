@@ -2,12 +2,14 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
     rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
   outputs = {
     nixpkgs,
     flake-utils,
+    treefmt-nix,
     rust-overlay,
     ...
   }:
@@ -16,6 +18,8 @@
         inherit system;
         overlays = [rust-overlay.overlays.default];
       };
+
+      treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
 
       cargoToml = (pkgs.lib.importTOML ./Cargo.toml).package;
       rustBins = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
@@ -66,6 +70,7 @@
         DUMMY = "world";
       };
 
-      formatter = pkgs.alejandra;
+      formatter = treefmtEval.config.build.wrapper;
+      checks.formatting = treefmtEval.config.build.check self;
     });
 }
