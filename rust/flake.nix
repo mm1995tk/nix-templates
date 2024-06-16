@@ -59,6 +59,9 @@
 
           config.Cmd = ["/bin/${cargoToml.name}"];
         };
+
+        # nix build -o "treefmt.toml" .#treefmt で　treefmt.toml　を生成
+        treefmt = treefmtEval.config.build.configFile;
       };
 
       devShells.default = pkgs.mkShell {
