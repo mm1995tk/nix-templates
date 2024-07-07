@@ -32,6 +32,10 @@
           name = "rust";
           description = "Rust Flake App";
         }
+        {
+          name = "rust-workspace";
+          description = "Cargo Workspace Flake App";
+        }
       ];
 
       defaultTemplate = self.templates.rust;
