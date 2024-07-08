@@ -49,13 +49,15 @@
       appNames;
     in {
       packages =
-        each-derivation // {
+        each-derivation
+        // {
           default = app;
 
           inherit app;
 
           dockerImages = import ./nix/container.nix {
             inherit project-name;
+            inherit pkgs;
             apps = each-derivation;
           };
 

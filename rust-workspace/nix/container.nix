@@ -1,11 +1,12 @@
 {
   project-name,
   apps,
+  pkgs,
 }: let
   attrsToList = attrs:
     map (key: {
       name = key;
-      value = attrs.${key};
+      app = attrs.${key};
     }) (builtins.attrNames attrs);
 
   buildImage = {
