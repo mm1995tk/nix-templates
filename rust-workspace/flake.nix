@@ -15,6 +15,7 @@
     ...
   }: let
     project-name = "rust-workspace";
+    appNames = builtins.attrNames (builtins.readDir ./apps);
   in
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {
@@ -27,76 +28,44 @@
       cargoToml = pkgs.lib.importTOML ./Cargo.toml;
       rustBins = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 
-      rustPlatform = pkgs.makeRustPlatform {
-        rustc = rustBins;
-        cargo = rustBins;
+      app = import ./nix {
+        inherit rustBins;
+        inherit project-name;
+        inherit pkgs;
       };
 
-      createImage = app: name: let
-        toml = pkgs.lib.importTOML ./${name}/Cargo.toml;
-        value = pkgs.dockerTools.buildImage {
-          name = name;
-          tag = toml.package.version;
-          created = "now";
-          copyToRoot = pkgs.buildEnv {
-            name = "image-${name}";
-            paths = [
-              app
-            ];
-            pathsToLink = ["/bin"];
+      each-derivation = builtins.foldl' (acc: appName:
+        acc
+        // {
+          ${appName} = pkgs.stdenv.mkDerivation {
+            name = appName;
+            src = ./.;
+            installPhase = ''
+              mkdir -p "$out/bin"
+              cp ${app}/bin/${appName} $out/bin
+            '';
+          };
+        }) {}
+      appNames;
+    in {
+      packages =
+        each-derivation // {
+          default = app;
+
+          inherit app;
+
+          dockerImages = import ./nix/container.nix {
+            inherit project-name;
+            apps = each-derivation;
           };
 
-          config.Cmd = ["/bin/${name}"];
-        };
-      in "cp ${value} $out/images/${name}";
-    in {
-      packages = rec {
-        default = app;
-
-        app = rustPlatform.buildRustPackage {
-          name = project-name;
-          src = ./.;
-          cargoLock.lockFile = ./Cargo.lock;
-          nativeBuildInputs =
-            (with pkgs; [
-              pkg-config
-              openssl
-            ])
-            ++ (
-              if pkgs.stdenv.isDarwin
-              then [pkgs.darwin.apple_sdk.frameworks.SystemConfiguration]
-              else []
-            );
-          PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
+          # nix build -o "treefmt.toml" .#treefmt で　treefmt.toml　を生成
+          treefmt = treefmtEval.config.build.configFile;
         };
 
-        dockerImages = pkgs.stdenv.mkDerivation {
-          name = project-name;
-          src = ./.;
-          installPhase = ''
-            mkdir -p "$out/images"
-            ${builtins.concatStringsSep "\n" (map (createImage app) cargoToml.workspace.members)}
-          '';
-        };
-
-        # nix build -o "treefmt.toml" .#treefmt で　treefmt.toml　を生成
-        treefmt = treefmtEval.config.build.configFile;
-      };
-
-      devShells.default = pkgs.mkShell {
-        inputsFrom = [];
-        buildInputs = with pkgs;
-          [
-            rustBins
-            evcxr
-            bacon
-          ]
-          ++ (
-            if pkgs.stdenv.isDarwin
-            then [pkgs.darwin.apple_sdk.frameworks.SystemConfiguration]
-            else []
-          );
-        DUMMY = "world";
+      devShells.default = import ./nix/shell.nix {
+        inherit rustBins;
+        inherit pkgs;
       };
 
       formatter = treefmtEval.config.build.wrapper;
