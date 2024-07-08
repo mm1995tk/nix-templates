@@ -1,2 +1,3 @@
 [workspace]
-members = ["app-x", "app-y", "crate-a", "crate-b"]
+members = ["apps/*", "crates/*"]
+default-members = ["apps/*"]
