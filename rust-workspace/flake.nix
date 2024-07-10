@@ -13,52 +13,41 @@
     treefmt-nix,
     rust-overlay,
     ...
-  }: let
-    project-name = "rust-workspace";
-    appNames = builtins.attrNames (builtins.readDir ./apps);
-  in
+  }:
     flake-utils.lib.eachDefaultSystem (system: let
+      project-name = builtins.baseNameOf ./.;
+
       pkgs = import nixpkgs {
         inherit system;
         overlays = [rust-overlay.overlays.default];
       };
+      
+      my-utils = import ./nix/utils.nix {inherit pkgs;};
 
       treefmtEval = treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix;
 
-      cargoToml = pkgs.lib.importTOML ./Cargo.toml;
       rustBins = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 
-      app = import ./nix {
+      drv = import ./nix {
         inherit rustBins;
         inherit project-name;
         inherit pkgs;
       };
 
-      each-derivation = builtins.foldl' (acc: appName:
-        acc
-        // {
-          ${appName} = pkgs.stdenv.mkDerivation {
-            name = appName;
-            src = ./.;
-            installPhase = ''
-              mkdir -p "$out/bin"
-              cp ${app}/bin/${appName} $out/bin
-            '';
-          };
-        }) {}
-      appNames;
+      drvAttrsSet = my-utils.from-multi-bins-drv-to-drvset {
+        inherit drv;
+        path-apps-dir = ./apps;
+      };
     in {
       packages =
-        each-derivation
+        drvAttrsSet
         // {
-          default = app;
+          default = drv;
 
-          inherit app;
-
-          dockerImages = import ./nix/container.nix {
+          images = import ./nix/container.nix {
             inherit project-name;
             inherit pkgs;
-            apps = each-derivation;
+            apps = drvAttrsSet;
           };
 
           # nix build -o "treefmt.toml" .#treefmt で　treefmt.toml　を生成
