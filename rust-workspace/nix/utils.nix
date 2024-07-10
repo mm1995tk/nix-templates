@@ -16,4 +16,10 @@
           '';
         };
       }) {} (builtins.attrNames (builtins.readDir path-apps-dir));
+
+  attrsToList = attrs:
+    map (key: {
+      inherit key;
+      value = attrs.${key};
+    }) (builtins.attrNames attrs);
 }

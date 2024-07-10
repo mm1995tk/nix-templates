@@ -2,13 +2,8 @@
   project-name,
   apps,
   pkgs,
+  my-utils,
 }: let
-  attrsToList = attrs:
-    map (key: {
-      name = key;
-      app = attrs.${key};
-    }) (builtins.attrNames attrs);
-
   buildImage = {
     name,
     tag,
@@ -28,25 +23,25 @@
     };
 
   generateScript = acc: {
-    name,
-    app,
+    key,
+    value,
   }:
     acc
     + "\n"
     + (let
-      toml = pkgs.lib.importTOML ../apps/${name}/Cargo.toml;
+      toml = pkgs.lib.importTOML ../apps/${key}/Cargo.toml;
       image = buildImage {
-        inherit name;
+        inherit key;
         tag = toml.package.version;
-        inherit app;
+        app = value;
       };
-    in "cp ${image} $out/images/${name}");
+    in "cp ${image} $out/images/${key}");
 in
   pkgs.stdenv.mkDerivation {
     name = project-name;
     src = ../.;
     installPhase = ''
       mkdir -p "$out/images"
-      ${builtins.foldl' generateScript "" (attrsToList apps)}
+      ${builtins.foldl' generateScript "" (my-utils.attrsToList apps)}
     '';
   }
