@@ -12,39 +12,20 @@
     nixpkgs,
     flake-utils,
   }: let
-    mk-template-list = list:
-      builtins.foldl' (acc: {
-        name,
-        description,
-      }:
-        acc
-        // {
-          ${name} = {
-            path = ./${name};
-            inherit description;
-          };
-        }) {}
-      list;
+    files = builtins.attrNames (builtins.readDir (builtins.filterSource (path: type: type == "directory" && baseNameOf path != ".git") ./.));
   in
     {
-      templates = mk-template-list [
-        {
-          name = "rust";
-          description = "Rust Flake App";
-        }
-        {
-          name = "rust-workspace";
-          description = "Cargo Workspace Flake App";
-        }
-        {
-          name = "go";
-          description = "Go Flake App";
-        }
-        {
-          name = "haskell";
-          description = "Haskell Flake App";
-        }
-      ];
+      templates = builtins.foldl' (acc: fileName:
+        acc
+        // {
+          ${fileName} = let
+            flakeNix = import ./${fileName}/flake.nix;
+          in
+            if builtins.hasAttr "description" flakeNix
+            then flakeNix.description
+            else "No description.";
+        }) {}
+      files;
 
       defaultTemplate = self.templates.rust;
     }

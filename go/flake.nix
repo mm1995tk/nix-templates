@@ -18,6 +18,7 @@
     treefmt-nix,
   }:
     flake-utils.lib.eachDefaultSystem (system: let
+      project-name = "mm1995tk/go";
       pkgs = import nixpkgs {
         inherit system;
         overlays = [gomod2nix.overlays.default];
