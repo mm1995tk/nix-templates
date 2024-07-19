@@ -40,6 +40,10 @@
           name = "go";
           description = "Go Flake App";
         }
+        {
+          name = "haskell";
+          description = "Haskell Flake App";
+        }
       ];
 
       defaultTemplate = self.templates.rust;
