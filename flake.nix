@@ -20,10 +20,13 @@
         // {
           ${fileName} = let
             flakeNix = import ./${fileName}/flake.nix;
-          in
-            if builtins.hasAttr "description" flakeNix
-            then flakeNix.description
-            else "No description.";
+          in {
+            path = ./${fileName};
+            description =
+              if builtins.hasAttr "description" flakeNix
+              then flakeNix.description
+              else "No description.";
+          };
         }) {}
       files;
 
