@@ -1,4 +1,5 @@
 {
+  description = "rust flake app";
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
@@ -23,7 +24,12 @@
       treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
 
       cargoToml = (pkgs.lib.importTOML ./Cargo.toml).package;
-      rustBins = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+      rustBins = (pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml).override {
+        extensions = [
+          # rust analyzerがstdライブラリを読み込むため
+          "rust-src"
+        ];
+      };
 
       rustPlatform = pkgs.makeRustPlatform {
         rustc = rustBins;
