@@ -1,5 +1,5 @@
 {pkgs}: let
-  goEnv = pkgs.mkGoEnv {pwd = ../.;};
+  goEnv = pkgs.mkGoEnv {pwd = ./.;};
 in
   pkgs.mkShell {
     buildInputs = [

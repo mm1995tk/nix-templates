@@ -43,13 +43,11 @@
         };
 
       images = import ./nix/container.nix {
-        inherit project-name;
-        inherit pkgs;
         apps = drvSet;
-        inherit my-utils;
+        inherit project-name pkgs my-utils;
       };
 
-      devShells.default = import ./nix/shell.nix {
+      devShells.default = import ./shell.nix {
         inherit pkgs;
       };
 
