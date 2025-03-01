@@ -41,7 +41,7 @@
         treefmtConfigFile = treefmtEval.config.build.configFile;
       };
 
-      devShells.default = import ./nix/shell.nix {
+      devShells.default = import ./shell.nix {
         inherit rustBins;
         inherit pkgs;
       };
