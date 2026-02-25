@@ -2,32 +2,28 @@
   "name": "Dev Container",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
-    "ghcr.io/devcontainers/features/nix": {
-      "packages": ["direnv", "home-manager"],
-      "extraNixConfig": [
-        "experimental-features = nix-command flakes"
-      ]
+    "ghcr.io/devcontainers/features/nix:1": {
+      "packages": ["direnv", "home-manager", "nixd"],
+      "extraNixConfig": ["experimental-features = nix-command flakes"]
     }
   },
-  "mounts": [
-    {
-      "type": "volume",
-      "source": "default-devcontainer-nix-store",
-      "target": "/nix"
-    }
-  ],
   "customizations": {
     "vscode": {
       "settings": {
+        "nix.enableLanguageServer": true,
+        "nix.serverPath": "nixd",
+        "[jsonc]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        }
       },
       "extensions": [
         "ms-vscode-remote.remote-containers",
         "jnoortheen.nix-ide",
         "mkhl.direnv",
-        "prettier.prettier-vscode"
+        "esbenp.prettier-vscode"
       ]
     }
   },
-  "postCreateCommand": "nix run nixpkgs#direnv allow",
-  "postAttachCommand": "nix run nixpkgs#direnv reload"
+  "postCreateCommand": "direnv allow",
+  "postAttachCommand": "direnv reload"
 }
