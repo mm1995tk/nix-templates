@@ -2,7 +2,8 @@
   description = "nix flake app";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    # nixpkgs.url = "github:NixOS/nixpkgs/release-25.11"; # バージョン指定
     flake-utils.url = "github:numtide/flake-utils";
     treefmt-nix.url = "github:numtide/treefmt-nix";
   };
@@ -25,7 +26,7 @@
         treefmt = treefmtEval.config.build.configFile;
       };
 
-      devShells = import ./shell.nix {
+      devShells = import ./flake_shell.nix {
         inherit pkgs;
       };
 
