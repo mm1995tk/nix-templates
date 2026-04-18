@@ -1,3 +1,0 @@
-[workspace]
-members = ["apps/*", "crates/*"]
-default-members = ["apps/*"]

@@ -30,7 +30,7 @@
         }) {}
       files;
 
-      defaultTemplate = self.templates.rust;
+      defaultTemplate = self.templates.empty;
     }
     // flake-utils.lib.eachDefaultSystem (system: {
       formatter = nixpkgs.legacyPackages.${system}.alejandra;

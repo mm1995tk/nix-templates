@@ -1,7 +1,0 @@
-[package]
-name = "app-y"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-crate-b = { path = "../../crates/crate-b" }
