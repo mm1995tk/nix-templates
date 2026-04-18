@@ -9,6 +9,7 @@
   "customizations": {
     "vscode": {
       "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
         "nix.enableLanguageServer": true,
         "nix.serverPath": "nixd",
         "[jsonc]": {
