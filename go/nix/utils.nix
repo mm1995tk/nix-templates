@@ -1,4 +1,10 @@
 {pkgs}: {
+  attrsToList = set:
+    map (name: {
+      key = name;
+      value = set.${name};
+    }) (builtins.attrNames set);
+
   # drv -> AttrSet<string, drv> | 複数のバイナリを生成するderivationを複数のderivationに分割する
   from-multi-bins-drv-to-drvset = {
     drv,

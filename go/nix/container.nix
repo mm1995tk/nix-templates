@@ -29,10 +29,9 @@
     acc
     + "\n"
     + (let
-      toml = pkgs.lib.importTOML ../apps/${key}/Cargo.toml;
       image = buildImage {
-        inherit key;
-        tag = toml.package.version;
+        name = key;
+        tag = "latest";
         app = value;
       };
     in "cp ${image} $out/images/${key}");

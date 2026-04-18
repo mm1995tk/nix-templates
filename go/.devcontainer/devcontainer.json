@@ -1,0 +1,32 @@
+{
+  "name": "Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/nix:1": {
+      "extraNixConfig": ["experimental-features = nix-command flakes"]
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker": {}
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "nix.enableLanguageServer": true,
+        "nix.serverPath": "nixd",
+        "[jsonc]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        }
+      },
+      "extensions": [
+        "ms-vscode-remote.remote-containers",
+        "jnoortheen.nix-ide",
+        "mkhl.direnv",
+        "esbenp.prettier-vscode",
+        "golang.go",
+        "bufbuild.vscode-buf",
+        "opentofu.vscode-opentofu"
+      ]
+    }
+  },
+  "postCreateCommand": "nix run nixpkgs#direnv allow",
+  "postAttachCommand": "nix run nixpkgs#direnv reload"
+}
