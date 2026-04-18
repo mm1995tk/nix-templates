@@ -3,7 +3,6 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/nix:1": {
-      "packages": ["direnv", "home-manager", "nixd"],
       "extraNixConfig": ["experimental-features = nix-command flakes"]
     }
   },
@@ -24,6 +23,6 @@
       ]
     }
   },
-  "postCreateCommand": "direnv allow",
-  "postAttachCommand": "direnv reload"
+  "postCreateCommand": "nix print-dev-env > ~/.nix-env.sh",
+  "onCreateCommand": "touch ~/.zshrc && echo 'source ~/.nix-env.sh' >> ~/.zshrc"
 }

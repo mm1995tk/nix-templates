@@ -20,15 +20,13 @@
         config.allowUnfree = true;
       };
 
-      treefmtEval = treefmt-nix.lib.evalModule pkgs ./nix/treefmt.nix;
+      treefmtEval = treefmt-nix.lib.evalModule pkgs ./flake-fmt.nix;
     in {
       packages = {
         treefmt = treefmtEval.config.build.configFile;
       };
 
-      devShells = import ./flake_shell.nix {
-        inherit pkgs;
-      };
+      devShells = import ./flake-shell.nix {inherit pkgs;};
 
       formatter = treefmtEval.config.build.wrapper;
       checks.formatting = treefmtEval.config.build.check self;
