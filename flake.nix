@@ -13,9 +13,8 @@
     flake-utils,
   }: let
     files = builtins.attrNames (builtins.readDir (builtins.filterSource (path: type: type == "directory" && baseNameOf path != ".git") ./.));
-  in
-    {
-      templates = builtins.foldl' (acc: fileName:
+
+    templates = builtins.foldl' (acc: fileName:
         acc
         // {
           ${fileName} = let
@@ -29,8 +28,11 @@
           };
         }) {}
       files;
-
-      defaultTemplate = self.templates.empty;
+  in
+    {
+      templates = templates // {
+        default = templates.empty;
+      };
     }
     // flake-utils.lib.eachDefaultSystem (system: {
       formatter = nixpkgs.legacyPackages.${system}.alejandra;
