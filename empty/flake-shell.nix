@@ -1,4 +1,4 @@
-{pkgs}: {
+{ pkgs }: {
   default = pkgs.mkShell {
     buildInputs = [
     ];

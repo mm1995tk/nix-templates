@@ -3,17 +3,19 @@
   sharedDeps,
   hPkgs,
   treefmtConfigFile,
-}: let
+}:
+let
   src = ../.;
-  packageYaml = let
-    json = pkgs.runCommand "yaml-to-json" {
-      nativeBuildInputs = [pkgs.yq];
-      inherit src;
-    } "cat $src/package.yaml | yq > $out";
-  in
+  packageYaml =
+    let
+      json = pkgs.runCommand "yaml-to-json" {
+        nativeBuildInputs = [ pkgs.yq ];
+        inherit src;
+      } "cat $src/package.yaml | yq > $out";
+    in
     builtins.fromJSON (builtins.readFile json);
 
-  my-utils = import ./utils.nix {inherit pkgs;};
+  my-utils = import ./utils.nix { inherit pkgs; };
 
   drv = pkgs.haskell.lib.buildStackProject {
     inherit src;
@@ -27,15 +29,15 @@
     executables = packageYaml.executables;
   };
 in
-  drvAttrsSet
-  // {
-    default = drv;
+drvAttrsSet
+// {
+  default = drv;
 
-    images = import ./container.nix {
-      inherit pkgs packageYaml my-utils;
-      apps = drvAttrsSet;
-    };
+  images = import ./container.nix {
+    inherit pkgs packageYaml my-utils;
+    apps = drvAttrsSet;
+  };
 
-    # nix build -o "treefmt.toml" .#treefmt で　treefmt.toml　を生成
-    treefmt = treefmtConfigFile;
-  }
+  # nix build -o "treefmt.toml" .#treefmt で　treefmt.toml　を生成
+  treefmt = treefmtConfigFile;
+}

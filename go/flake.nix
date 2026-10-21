@@ -12,51 +12,56 @@
     treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    flake-utils,
-    gomod2nix,
-    treefmt-nix,
-  }:
-    flake-utils.lib.eachDefaultSystem (system: let
-      project-name = "mm1995tk/go";
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [gomod2nix.overlays.default];
-      };
-
-      my-utils = import ./nix/utils.nix {inherit pkgs;};
-
-      treefmtEval = treefmt-nix.lib.evalModule pkgs ./flake-treefmt.nix;
-
-      appsDrv = pkgs.buildGoApplication {
-        pname = "go";
-        version = "0.1";
-        pwd = ./.;
-        src = ./.;
-        modules = ./gomod2nix.toml;
-      };
-
-      drvSet = my-utils.from-multi-bins-drv-to-drvset {
-        drv = appsDrv;
-        path-apps-dir = ./cmd;
-      };
-    in {
-      packages =
-        drvSet
-        // (import ./flake-task.nix {})
-        // {
-          default = appsDrv;
-          treefmt = treefmtEval.config.build.configFile;
-          images = import ./nix/container.nix {
-            apps = drvSet;
-            inherit project-name pkgs my-utils;
-          };
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      gomod2nix,
+      treefmt-nix,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        project-name = "mm1995tk/go";
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ gomod2nix.overlays.default ];
         };
 
-      devShells = import ./flake-shell.nix {inherit pkgs project-name;};
-      formatter = treefmtEval.config.build.wrapper;
-      checks.formatting = treefmtEval.config.build.check self;
-    });
+        my-utils = import ./nix/utils.nix { inherit pkgs; };
+
+        treefmtEval = treefmt-nix.lib.evalModule pkgs ./flake-treefmt.nix;
+
+        appsDrv = pkgs.buildGoApplication {
+          pname = "go";
+          version = "0.1";
+          pwd = ./.;
+          src = ./.;
+          modules = ./gomod2nix.toml;
+        };
+
+        drvSet = my-utils.from-multi-bins-drv-to-drvset {
+          drv = appsDrv;
+          path-apps-dir = ./cmd;
+        };
+      in
+      {
+        packages =
+          drvSet
+          // (import ./flake-task.nix { })
+          // {
+            default = appsDrv;
+            treefmt = treefmtEval.config.build.configFile;
+            images = import ./nix/container.nix {
+              apps = drvSet;
+              inherit project-name pkgs my-utils;
+            };
+          };
+
+        devShells = import ./flake-shell.nix { inherit pkgs project-name; };
+        formatter = treefmtEval.config.build.wrapper;
+        checks.formatting = treefmtEval.config.build.check self;
+      }
+    );
 }
