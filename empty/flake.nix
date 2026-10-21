@@ -8,27 +8,32 @@
     treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    flake-utils,
-    treefmt-nix,
-  }:
-    flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      treefmt-nix,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
 
-      treefmtEval = treefmt-nix.lib.evalModule pkgs ./flake-fmt.nix;
-    in {
-      packages = {
-        treefmt = treefmtEval.config.build.configFile;
-      };
+        treefmtEval = treefmt-nix.lib.evalModule pkgs ./flake-fmt.nix;
+      in
+      {
+        packages = {
+          treefmt = treefmtEval.config.build.configFile;
+        };
 
-      devShells = import ./flake-shell.nix {inherit pkgs;};
+        devShells = import ./flake-shell.nix { inherit pkgs; };
 
-      formatter = treefmtEval.config.build.wrapper;
-      checks.formatting = treefmtEval.config.build.check self;
-    });
+        formatter = treefmtEval.config.build.wrapper;
+        checks.formatting = treefmtEval.config.build.check self;
+      }
+    );
 }

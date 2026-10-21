@@ -7,34 +7,41 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    flake-utils,
-  }: let
-    files = builtins.attrNames (builtins.readDir (builtins.filterSource (path: type: type == "directory" && baseNameOf path != ".git") ./.));
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
+    let
+      files = builtins.attrNames (
+        builtins.readDir (
+          builtins.filterSource (path: type: type == "directory" && baseNameOf path != ".git") ./.
+        )
+      );
 
-    templates = builtins.foldl' (acc: fileName:
+      templates = builtins.foldl' (
+        acc: fileName:
         acc
         // {
-          ${fileName} = let
-            flakeNix = import ./${fileName}/flake.nix;
-          in {
-            path = ./${fileName};
-            description =
-              if builtins.hasAttr "description" flakeNix
-              then flakeNix.description
-              else "No description.";
-          };
-        }) {}
-      files;
-  in
+          ${fileName} =
+            let
+              flakeNix = import ./${fileName}/flake.nix;
+            in
+            {
+              path = ./${fileName};
+              description =
+                if builtins.hasAttr "description" flakeNix then flakeNix.description else "No description.";
+            };
+        }
+      ) { } files;
+    in
     {
       templates = templates // {
         default = templates.empty;
       };
     }
     // flake-utils.lib.eachDefaultSystem (system: {
-      formatter = nixpkgs.legacyPackages.${system}.alejandra;
+      formatter = nixpkgs.legacyPackages.${system}.nixfmt-tree;
     });
 }
